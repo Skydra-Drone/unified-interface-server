@@ -1,51 +1,66 @@
 #!/usr/bin/env python3
-import rospy
-from std_msgs.msg import String, Float32
-from custom_msgs.msg import YoloDetectionArray, TargetCoordinatesArray
+import roslibpy
 import threading
 import time
+import logging
 
 class RosBridge:
     def __init__(self):
-        # We don't init_node here immediately to avoid issues with import time
-        # It's called in run_ros_spin
         self.state = {
-            "status": "DISCONNECTED",
+            "status": "CONNECTING...",
             "targets_found": 0,
             "drone_status": "UNKNOWN",
             "last_heartbeat": 0
         }
+        self.client = None
         self.mission_pub = None
+        self.talker = None
 
     def run_ros_spin(self):
-        rospy.init_node('unified_control_backend', anonymous=True, disable_signals=True)
+        # Connect to ROS Bridge Daemon running on the Linux machine (or WSL)
+        # Default: localhost:9090. Change IP if ROS is on another laptop.
+        self.client = roslibpy.Ros(host='localhost', port=9090)
         
+        try:
+            self.client.run()
+            self.state["status"] = "CONNECTED"
+            print("Unified Control Backend: Connected to ROS Bridge!")
+        except Exception as e:
+            self.state["status"] = "CONNECTION FAILED"
+            print(f"Failed to connect: {e}")
+            return
+
         # Publishers
-        self.mission_pub = rospy.Publisher('/mission/command', String, queue_size=10)
+        self.talker = roslibpy.Topic(self.client, '/mission/command', 'std_msgs/String')
+        self.talker.advertise()
         
         # Subscribers
-        rospy.Subscriber('/yolo/detections', YoloDetectionArray, self.detection_callback)
-        rospy.Subscriber('/mission/target_coordinates', TargetCoordinatesArray, self.target_callback)
-        # Add more subs as needed
+        self.detection_listener = roslibpy.Topic(self.client, '/yolo/detections', 'custom_msgs/YoloDetectionArray')
+        self.detection_listener.subscribe(self.detection_callback)
         
-        self.state["status"] = "CONNECTED"
-        rospy.loginfo("Unified Control Backend ROS Node Started")
+        self.target_listener = roslibpy.Topic(self.client, '/mission/target_coordinates', 'custom_msgs/TargetCoordinatesArray')
+        self.target_listener.subscribe(self.target_callback)
         
-        rate = rospy.Rate(10)
-        while not rospy.is_shutdown():
+        # Keep alive loop
+        while self.client.is_connected:
             self.state["last_heartbeat"] = time.time()
-            rate.sleep()
+            time.sleep(1)
+        
+        self.state["status"] = "DISCONNECTED"
 
     def detection_callback(self, msg):
         pass # Optional: Process raw detections
 
     def target_callback(self, msg):
-        self.state["targets_found"] = len(msg.diff_targets)
+        # 'msg' is a Dictionary in roslibpy
+        targets = msg.get('diff_targets', [])
+        self.state["targets_found"] = len(targets)
 
     def publish_mission_trigger(self, command: str):
-        if self.mission_pub:
-            rospy.loginfo(f"UI Triggered Command: {command}")
-            self.mission_pub.publish(command)
+        if self.talker and self.client.is_connected:
+            print(f"UI Triggered Command: {command}")
+            # roslibpy expects a dictionary matching the message definition
+            self.talker.publish(roslibpy.Message({'data': command}))
 
     def get_state(self):
         return self.state
