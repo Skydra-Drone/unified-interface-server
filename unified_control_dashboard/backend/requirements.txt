@@ -1,6 +1,6 @@
 fastapi
 uvicorn
 websockets
-rospkg
 numpy
 pymavlink
+roslibpy

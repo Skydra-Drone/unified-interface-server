@@ -61,6 +61,9 @@ async def websocket_endpoint(websocket: WebSocket):
             
             if "trigger_mission" in cmd:
                 ros_node.publish_mission_trigger(cmd["trigger_mission"])
+            
+            if "upload_kml" in cmd:
+                ros_node.publish_kml_data(cmd["upload_kml"])
                 
             await asyncio.sleep(0.1) # 10Hz update rate
     except WebSocketDisconnect:

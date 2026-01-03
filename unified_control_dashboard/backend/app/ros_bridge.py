@@ -33,6 +33,9 @@ class RosBridge:
         # Publishers
         self.talker = roslibpy.Topic(self.client, '/mission/command', 'std_msgs/String')
         self.talker.advertise()
+
+        self.kml_talker = roslibpy.Topic(self.client, '/mission/kml_data', 'std_msgs/String')
+        self.kml_talker.advertise()
         
         # Subscribers
         self.detection_listener = roslibpy.Topic(self.client, '/yolo/detections', 'custom_msgs/YoloDetectionArray')
@@ -57,10 +60,21 @@ class RosBridge:
         self.state["targets_found"] = len(targets)
 
     def publish_mission_trigger(self, command: str):
-        if self.talker and self.client.is_connected:
-            print(f"UI Triggered Command: {command}")
-            # roslibpy expects a dictionary matching the message definition
-            self.talker.publish(roslibpy.Message({'data': command}))
+        try:
+            if self.talker and self.client.is_connected:
+                print(f"UI Triggered Command: {command}")
+                # roslibpy expects a dictionary matching the message definition
+                self.talker.publish(roslibpy.Message({'data': command}))
+        except Exception as e:
+            print(f"Error publishing command: {e}")
+
+    def publish_kml_data(self, kml_content: str):
+        try:
+            if self.kml_talker and self.client.is_connected:
+                print(f"UI Uploaded KML: {len(kml_content)} bytes")
+                self.kml_talker.publish(roslibpy.Message({'data': kml_content}))
+        except Exception as e:
+            print(f"Error publishing KML: {e}")
 
     def get_state(self):
         return self.state
