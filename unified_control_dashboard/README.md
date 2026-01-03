@@ -1,11 +1,10 @@
 # Unified Control Dashboard 🛸
 
 > **"The Brain" of the Trinity Drone System.**
-> A Hacker-Style Command & Control Interface for organizing autonomous drone swarms.
+<img width="1917" height="857" alt="image" src="https://github.com/user-attachments/assets/ed117833-2640-4746-a690-285d6c03196e" />
 
-![Unified Control Dashboard](/api/placeholder/800/400)
 
-## 🏗️ The Trinity Architecture
+##  The Trinity Architecture
 
 This repository is **Part 1** of a 3-part distributed system designed for autonomous search and delivery operations.
 
@@ -15,7 +14,7 @@ This repository is **Part 1** of a 3-part distributed system designed for autono
 | **2. Perception Node** | Scout Drone (Jetson) | **The Eyes.** AI Inspection, YOLOv8 Object Detection, Camera Stream. | **ROS Native** |
 | **3. Scout Node** | Scout Drone (Flight Controller) | **The Hands.** Flight Logic, Lawnmower Search Pattern, Collision Avoidance. | **MAVLink / ROS** |
 
-### 🔌 How It Connects (The Bridge)
+###  How It Connects (The Bridge)
 Since the **Unified Control Laptop** runs on **Windows** (which doesn't natively support ROS 1 Noetic), we use a **ROS Bridge** architecture:
 
 1.  **Linux/WSL Side**: Runs `roscore` and `rosbridge_server`. This exposes the ROS network as a WebSocket on port `9090`.
@@ -31,7 +30,7 @@ graph TD
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 *   **Node.js** (for Frontend)
@@ -70,7 +69,7 @@ npm run dev
 
 ---
 
-## 📡 Features
+##  Features
 *   **Hacker Terminal UI**: Minimalist, high-contrast aesthetics for field operations.
 *   **KML Mission Upload**: Upload standard Google Earth KML files to define search boundaries.
 *   **Real-time Telemetry**: Live target counting and status monitoring.
@@ -78,11 +77,11 @@ npm run dev
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 *   **Frontend**: React, Vite, Tailwind CSS, Lucide Icons.
 *   **Backend**: Python, FastAPI, roslibpy (ROS Bridge Client).
 *   **Communication**: WebSockets, JSON.
 
 ---
 
-*Verified for Field Deployment.* 🟢
+
